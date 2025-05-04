@@ -13,12 +13,11 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit
   fileFilter: (_req, file, cb) => {
-    // Check file types
+    // Check file types by extension only (ignoring MIME type which can be unreliable for text files)
     const filetypes = /pdf|docx?|txt|jpe?g|png|md|markdown/;
-    const mimetype = filetypes.test(file.mimetype);
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     
-    if (mimetype && extname) {
+    if (extname) {
       return cb(null, true);
     }
     
