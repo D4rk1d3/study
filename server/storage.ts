@@ -41,9 +41,30 @@ export const storage = {
   },
   
   // Update document status
-  async updateDocumentStatus(documentId: string, status: string, progress: number): Promise<void> {
+  async updateDocumentStatus(documentId: string, status: string, progress: number, errorMessage?: string): Promise<void> {
+    const updateData: any = {
+      status,
+      progress,
+      updatedAt: new Date()
+    };
+    
+    // Se è stato fornito un messaggio di errore, aggiungilo ai metadati
+    if (errorMessage) {
+      // Ottieni il documento corrente per aggiornare i metadati
+      const document = await this.getDocumentById(documentId);
+      if (document) {
+        // Aggiungi l'errore ai metadati
+        const settingsObj = document.settings ? JSON.parse(document.settings || '{}') : {};
+        settingsObj.lastErrorMessage = errorMessage;
+        settingsObj.lastErrorTime = new Date().toISOString();
+        
+        // Aggiorna i metadati
+        updateData.settings = JSON.stringify(settingsObj);
+      }
+    }
+    
     await db.update(schema.documents)
-      .set({ status, progress, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(schema.documents.id, documentId));
   },
   

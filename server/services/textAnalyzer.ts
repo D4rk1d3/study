@@ -180,8 +180,13 @@ export const textAnalyzer = {
       try {
         console.log("Utilizzando OpenAI per la sintesi del testo");
         return await openaiService.summarizeText(text, level);
-      } catch (error) {
-        console.error("Errore con OpenAI, fallback al metodo tradizionale:", error);
+      } catch (error: any) {
+        // Controlla specificamente gli errori di quota OpenAI
+        if (error.message === "Quota OpenAI insufficiente" || error.code === 'insufficient_quota') {
+          console.warn("Quota OpenAI insufficiente. Passaggio al metodo tradizionale.");
+        } else {
+          console.error("Errore con OpenAI, fallback al metodo tradizionale:", error);
+        }
       }
     }
     
@@ -254,9 +259,16 @@ export const textAnalyzer = {
     if (process.env.OPENAI_API_KEY) {
       try {
         return await openaiService.rewriteText(text, level);
-      } catch (error) {
-        console.error("Errore nella rielaborazione con OpenAI:", error);
+      } catch (error: any) {
+        // Controlla specificamente gli errori di quota OpenAI
+        if (error.message === "Quota OpenAI insufficiente" || error.code === 'insufficient_quota') {
+          console.warn("Quota OpenAI insufficiente. Impossibile rielaborare il testo.");
+        } else {
+          console.error("Errore nella rielaborazione con OpenAI:", error);
+        }
       }
+    } else {
+      console.log("OpenAI API key non configurata. Utilizzo del testo originale.");
     }
     
     // Se OpenAI non è disponibile o fallisce, restituisci il testo originale
@@ -273,15 +285,23 @@ export const textAnalyzer = {
     if (process.env.OPENAI_API_KEY) {
       try {
         return await openaiService.generateGlossary(text, keywords);
-      } catch (error) {
-        console.error("Errore nella generazione del glossario con OpenAI:", error);
+      } catch (error: any) {
+        // Controlla specificamente gli errori di quota OpenAI
+        if (error.message === "Quota OpenAI insufficiente" || error.code === 'insufficient_quota') {
+          console.warn("Quota OpenAI insufficiente. Generazione glossario semplificato.");
+        } else {
+          console.error("Errore nella generazione del glossario con OpenAI:", error);
+        }
       }
+    } else {
+      console.log("OpenAI API key non configurata. Utilizzo del glossario semplificato.");
     }
     
     // Fallback a un glossario semplice basato sulle parole chiave
+    console.log("Generando glossario semplificato basato sulle parole chiave");
     return keywords.slice(0, 10).map(term => ({
       term,
-      definition: `Definizione per ${term} ottenuta automaticamente.`
+      definition: `Termine utilizzato nel documento. Questo termine appare frequentemente nel testo ed è stato identificato come importante per la comprensione del contenuto.`
     }));
   }
 };

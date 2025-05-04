@@ -169,30 +169,62 @@ export const fileProcessor = {
       
       // Rielabora il testo utilizzando OpenAI se richiesto
       let processedText = summarizedText;
-      if (settings.useAI && process.env.OPENAI_API_KEY) {
-        console.log("Rielaborando il testo con OpenAI...");
-        try {
-          processedText = await textAnalyzer.rewriteText(
-            summarizedText,
-            settings.rewriteLevel || 3
-          );
-        } catch (error) {
-          console.error("Errore nella rielaborazione del testo:", error);
+      let aiUsed = false;
+      
+      if (settings.useAI) {
+        if (process.env.OPENAI_API_KEY) {
+          console.log("Rielaborando il testo con OpenAI...");
+          try {
+            const rewrittenText = await textAnalyzer.rewriteText(
+              summarizedText,
+              settings.rewriteLevel || 3
+            );
+            
+            // Verifica se il testo è stato effettivamente rielaborato
+            if (rewrittenText !== summarizedText) {
+              processedText = rewrittenText;
+              aiUsed = true;
+              console.log("Rielaborazione AI completata con successo");
+            } else {
+              console.log("Il testo non è stato rielaborato da AI, si utilizza la versione originale");
+            }
+          } catch (error) {
+            console.error("Errore nella rielaborazione del testo:", error);
+            // Aggiorna il documento con informazioni sull'errore
+            await storage.updateDocumentStatus(documentId, "analyzing", 70, 
+              "Impossibile utilizzare OpenAI per la rielaborazione del testo. Utilizzando metodi tradizionali.");
+          }
+        } else {
+          console.log("OpenAI API key non configurata. Utilizzo metodi tradizionali.");
+          await storage.updateDocumentStatus(documentId, "analyzing", 70, 
+            "OpenAI API key non configurata. Utilizzando metodi tradizionali.");
         }
       } else {
-        console.log("Rielaborazione AI non richiesta o API key non disponibile");
+        console.log("Rielaborazione AI non richiesta");
       }
       
       // Genera un glossario avanzato se richiesto
-      if (settings.generateGlossary && process.env.OPENAI_API_KEY) {
-        console.log("Generando un glossario avanzato con OpenAI");
-        try {
-          combinedMetadata.glossaryItems = await textAnalyzer.generateGlossary(
-            processedText, 
-            combinedMetadata.keywords
-          );
-        } catch (error) {
-          console.error("Errore nella generazione del glossario:", error);
+      if (settings.generateGlossary) {
+        if (process.env.OPENAI_API_KEY) {
+          console.log("Generando un glossario avanzato con OpenAI");
+          try {
+            combinedMetadata.glossaryItems = await textAnalyzer.generateGlossary(
+              processedText, 
+              combinedMetadata.keywords
+            );
+          } catch (error) {
+            console.error("Errore nella generazione del glossario:", error);
+            combinedMetadata.glossaryItems = combinedMetadata.keywords.slice(0, 10).map(term => ({
+              term,
+              definition: `Termine chiave del documento identificato tramite analisi del testo.`
+            }));
+          }
+        } else {
+          console.log("OpenAI API key non configurata. Generando glossario semplificato.");
+          combinedMetadata.glossaryItems = combinedMetadata.keywords.slice(0, 10).map(term => ({
+            term,
+            definition: `Termine chiave del documento identificato tramite analisi del testo.`
+          }));
         }
       }
       

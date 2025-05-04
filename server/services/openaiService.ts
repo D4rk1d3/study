@@ -17,6 +17,11 @@ export const openaiService = {
     try {
       console.log(`Rielaborando testo con OpenAI (livello ${level})...`);
       
+      // Controllo preventivo della chiave API
+      if (!process.env.OPENAI_API_KEY) {
+        throw new Error("OpenAI API key non configurata");
+      }
+      
       // Crea un prompt che varia in base al livello di rielaborazione
       const promptByLevel = {
         1: "Correggi gli errori grammaticali e di punteggiatura, ma mantieni il testo praticamente identico all'originale:",
@@ -47,10 +52,16 @@ export const openaiService = {
       const rewrittenText = response.choices[0].message.content || text;
       console.log("Rielaborazione completata");
       return rewrittenText;
-    } catch (error) {
-      console.error("Errore nella rielaborazione del testo con OpenAI:", error);
-      // In caso di errore, restituisci il testo originale
-      return text;
+    } catch (error: any) {
+      // Controlla se l'errore è dovuto a quota insufficiente
+      if (error.code === 'insufficient_quota') {
+        console.error("ERRORE DI QUOTA OPENAI: Credito insufficiente per utilizzare l'API OpenAI.");
+        throw new Error("Quota OpenAI insufficiente");
+      } else {
+        console.error("Errore nella rielaborazione del testo con OpenAI:", error);
+        // In caso di altro errore, restituisci il testo originale
+        return text;
+      }
     }
   },
   
