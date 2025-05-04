@@ -179,7 +179,13 @@ export const textAnalyzer = {
     if (process.env.OPENAI_API_KEY) {
       try {
         console.log("Utilizzando OpenAI per la sintesi del testo");
-        return await openaiService.summarizeText(text, level);
+        const aiSummary = await openaiService.summarizeText(text, level);
+        // Se la risposta è valida, restituiscila
+        if (aiSummary && aiSummary.length > 0) {
+          return aiSummary;
+        } else {
+          console.warn("La risposta di OpenAI è vuota, passaggio al metodo tradizionale.");
+        }
       } catch (error: any) {
         // Controlla specificamente gli errori di quota OpenAI
         if (error.message === "Quota OpenAI insufficiente" || error.code === 'insufficient_quota') {
@@ -258,7 +264,13 @@ export const textAnalyzer = {
   async rewriteText(text: string, level: number): Promise<string> {
     if (process.env.OPENAI_API_KEY) {
       try {
-        return await openaiService.rewriteText(text, level);
+        const aiResult = await openaiService.rewriteText(text, level);
+        // Controlla che la risposta sia valida
+        if (aiResult && aiResult.length > 0) {
+          return aiResult;
+        } else {
+          console.warn("Risposta OpenAI vuota o non valida. Utilizzo del testo originale.");
+        }
       } catch (error: any) {
         // Controlla specificamente gli errori di quota OpenAI
         if (error.message === "Quota OpenAI insufficiente" || error.code === 'insufficient_quota') {
@@ -284,7 +296,13 @@ export const textAnalyzer = {
   async generateGlossary(text: string, keywords: string[]): Promise<Array<{ term: string, definition: string }>> {
     if (process.env.OPENAI_API_KEY) {
       try {
-        return await openaiService.generateGlossary(text, keywords);
+        const aiGlossary = await openaiService.generateGlossary(text, keywords);
+        // Controlla che la risposta sia valida e non vuota
+        if (aiGlossary && Array.isArray(aiGlossary) && aiGlossary.length > 0) {
+          return aiGlossary;
+        } else {
+          console.warn("Glossario OpenAI vuoto o non valido. Generando glossario semplificato.");
+        }
       } catch (error: any) {
         // Controlla specificamente gli errori di quota OpenAI
         if (error.message === "Quota OpenAI insufficiente" || error.code === 'insufficient_quota') {
