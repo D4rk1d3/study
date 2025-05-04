@@ -1,0 +1,111 @@
+Di seguito trovi un Product Vision & Requirements (PVR) dettagliato per l’app minimalista di cui hai bisogno. Ho strutturato il documento in sezioni chiare e approfondite, includendo la mia opinione personale sui punti critici e sulle scelte tecnologiche.
+
+1. Visione del Prodotto
+Creare un’app semplice e immediata che, caricando materiali di studio in diversi formati (PDF, immagini, TXT, Word), generi in automatico una “dispensa” di studio unificata:
+
+Sintesi intelligente di tutto il testo (note tue, note altrui, estratti di libro);
+
+Riconoscimento e confronto di parti ridondanti per eliminare duplicati e mettere in evidenza le differenze;
+
+Integrazione di immagini (fotografie di pagina, diagrammi) con estrazione OCR e contestualizzazione nel flusso testuale;
+
+Output personalizzabile (indice, paragrafi riassunti, glossario).
+
+Mia opinione: concentrarsi fin dall’inizio sulla qualità dell’estrazione OCR e sul fine-tuning del modello di sintesi è la chiave per evitare un MVP “scadente” perfettibile solo in fasi successive.
+
+2. Obiettivi SMART
+Specifico: un’app per studenti delle superiori/università che gestisca almeno 4 formati input e produca un documento riassuntivo.
+
+Misurabile: accuracy OCR ≥ 90%, soddisfazione utente ≥ 4.0/5 in beta-test.
+
+Achievable: sfruttare librerie open‐source (Tesseract, transformer Hugginface) e un’interfaccia web/mobile cross‐platform (React Native).
+
+Rilevante: risolve il problema reale del sovraccarico di note eterogenee.
+
+Time‐bound: MVP in 12 settimane, alfa‐release in 16.
+
+3. Persona e Use Case
+Pietro, studente di liceo (età 17–19), multitasking tra appunti digitali/carta, poco tempo per organizzazione;
+
+Use Case Principale: carico un PDF di appunti + foto di pagina + file Word con note, premo “Genera Dispensa” → ricevo PDF riunificato, indice automatico e glossario dei termini chiave.
+
+4. Requisiti Funzionali
+Autenticazione leggera: login Google/Apple facoltativo.
+
+Upload: drag‐&‐drop / selezione file per PDF, DOCX, TXT, JPG/PNG.
+
+Pre‐processing:
+
+OCR multilingua (Italiano + Inglese) con Tesseract o API cloud.
+
+Parsing DOCX/TXT (estrazione strutture heading, liste).
+
+Analisi contenuti:
+
+Deduplicazione testo tramite hashing/frasi simili (MinHash o embedding).
+
+Segmentazione semantica (paragraph clustering con transformer).
+
+Generazione dispensa:
+
+Sintesi AI (model fine‐tuned su testi scolastici)
+
+Creazione indice automatico basato su heading estratti.
+
+Glossario e “note a margine” generate.
+
+Esportazione: PDF / Word / HTML.
+
+Interfaccia: minimal con schermo unico di caricamento + barra di avanzamento + pagina di download.
+
+Mia opinione: inserire subito il glossario automatico è un plus competitivo, ma può essere spostato in fase 2 se si vuole snellire l’MVP.
+
+5. Requisiti Non‐Funzionali
+Performance: tempo di elaborazione < 2 min per 50 pagine.
+
+Scalabilità: backend serverless (AWS Lambda/GCP Functions).
+
+Sicurezza: crittografia in transito (HTTPS) + at‐rest su S3 Bucket.
+
+Usabilità: UI/UX mobile‐first, accessibile (WCAG 2.1 AA).
+
+Manutenibilità: codice modulare in Node.js/Python; container Docker.
+
+6. Scelte Tecnologiche Consigliate
+Frontend: React Native o Flutter per cross‐platform mobile + Web.
+
+Backend: Python (FastAPI) per orchestrazione OCR e IA.
+
+OCR: Tesseract locale o Google Vision API per maggiore precisione.
+
+Sintesi AI: transformer Hugging Face (ad es. facebook/bart-large-cnn), con fine‐tuning su dataset scolastico.
+
+Storage: AWS S3 (file) + DynamoDB (metadati).
+
+CI/CD: GitHub Actions + Docker Hub.
+
+Mia opinione: partire con un’architettura serverless accelera il time‐to‐market, ma occorre monitorare i costi cloud già dopo pochi test.
+
+7. Roadmap e Milestones
+Fase	Durata	Deliverable	Criticità
+1. Analisi	2 settimane	Documento tecnico + prototipo UI statico	Definire scope MVP
+2. MVP Dev	6 settimane	Upload + OCR + parsing + generazione base	Stabilità OCR
+3. AI Integration	4 settimane	Modulo sintesi + deduplica + export PDF	Qualità sintesi
+4. Beta Test	2 settimane	Test con 10–20 studenti; feedback	UX/usabilità
+5. Release 1.0	2 settimane	Rilascio pubblico su Play/App Store + Web	Compliance store
+
+8. KPI di Successo
+Tasso di conversione: ≥ 30% tra utenti che caricano file e coloro che generano la dispensa.
+
+Net Promoter Score: ≥ 40.
+
+Error Rate OCR: < 10%.
+
+Tempo medio per dispensa: < 2 min.
+
+9. Rischi e Mitigazioni
+OCR inaccurato → scelta API commerciale + fallback.
+
+Sintesi non fedele → regolazione soglia di compressione e possibilità di “espansione” manuale.
+
+Costi cloud elevati → limiti di utilizzo gratuito e caching dei risultati.
