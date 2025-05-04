@@ -43,14 +43,14 @@ export const storage = {
   // Update document status
   async updateDocumentStatus(documentId: string, status: string, progress: number): Promise<void> {
     await db.update(schema.documents)
-      .set({ status, progress, updated_at: new Date() })
+      .set({ status, progress, updatedAt: new Date() })
       .where(eq(schema.documents.id, documentId));
   },
   
   // Update document output path
   async updateDocumentOutput(documentId: string, outputPath: string): Promise<void> {
     await db.update(schema.documents)
-      .set({ output_path: outputPath, status: 'completed', progress: 100, updated_at: new Date() })
+      .set({ outputPath: outputPath, status: 'completed', progress: 100, updatedAt: new Date() })
       .where(eq(schema.documents.id, documentId));
   },
   
@@ -85,8 +85,8 @@ export const storage = {
     
     const [file] = await db.insert(schema.files).values({
       id,
-      document_id: documentId,
-      original_name: originalname,
+      documentId: documentId,
+      originalName: originalname,
       filename,
       mimetype,
       size,
@@ -116,10 +116,10 @@ export const storage = {
   async storeProcessedContent(fileId: string, content: string, metadata: any): Promise<void> {
     await db.update(schema.files)
       .set({ 
-        processed_content: content,
+        processedContent: content,
         metadata: JSON.stringify(metadata),
         status: 'processed',
-        updated_at: new Date()
+        updatedAt: new Date()
       })
       .where(eq(schema.files.id, fileId));
   },
