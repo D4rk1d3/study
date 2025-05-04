@@ -77,12 +77,33 @@ export const fileProcessor = {
             // Markdown file processing
             console.log("Processing Markdown file");
             text = await this.processMarkdownFile(filePath);
-          } else if (/\.(jpe?g|png)$/i.test(filePath)) {
+          } else if (/\.(jpe?g|png|gif|bmp|tiff?)$/i.test(filePath)) {
             // Image file processing with OCR
-            console.log("Processing Image file with OCR");
-            text = await ocrService.extractTextFromImage(filePath);
+            console.log("Elaborazione immagine con OCR:", filePath);
+            
+            try {
+              // Pre-process the image if needed (rotazione, miglioramento contrasto, ecc.)
+              const preprocessedPath = await ocrService.preprocessImage(filePath);
+              
+              // Extract text using OCR
+              console.log("Avvio OCR su immagine preprocessata");
+              text = await ocrService.extractTextFromImage(preprocessedPath);
+              
+              if (!text || text.trim().length === 0) {
+                console.warn("OCR non ha estratto testo dall'immagine");
+                await storage.updateDocumentStatus(documentId, "ocr", 35, 
+                  "Non è stato possibile estrarre testo dall'immagine. Controlla che l'immagine contenga testo leggibile.");
+              } else {
+                console.log(`OCR completato con successo. Estratti ${text.length} caratteri.`);
+              }
+            } catch (error) {
+              console.error("Errore nell'elaborazione OCR:", error);
+              await storage.updateDocumentStatus(documentId, "ocr", 35, 
+                "Si è verificato un errore durante l'OCR. Prova con un'immagine di migliore qualità.");
+              text = '';
+            }
           } else {
-            console.log(`Unsupported file format: ${filePath}`);
+            console.log(`Formato file non supportato: ${filePath}`);
           }
           
           console.log(`Extracted text (sample): ${text.substring(0, 100)}...`);
