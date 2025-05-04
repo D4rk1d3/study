@@ -10,34 +10,39 @@ import * as mammoth from 'mammoth';
 export const fileProcessor = {
   async processDocumentFiles(documentId: string): Promise<void> {
     try {
+      console.log(`Processing document files for document ${documentId}`);
+      
       // Get document
       const document = await storage.getDocumentById(documentId);
-      if (!document) throw new Error("Document not found");
+      if (!document) {
+        console.error("Document not found");
+        throw new Error("Document not found");
+      }
+      
+      console.log(`Document found: ${document.id}, status: ${document.status}`);
       
       // Update document status
       await storage.updateDocumentStatus(documentId, "ocr", 5);
       
       // Get document settings
       const settings = await storage.getDocumentSettings(documentId);
-      if (!settings) throw new Error("Document settings not found");
+      if (!settings) {
+        console.error("Document settings not found");
+        throw new Error("Document settings not found");
+      }
       
-      // Get files associated with document
-      const files = await storage.getDocumentById(documentId);
-      if (!files) throw new Error("No files found for document");
+      console.log(`Document settings: ${JSON.stringify(settings)}`);
       
       // Track progress
       let processedFileCount = 0;
-      const totalFiles = files.fileIds.length;
+      const totalFiles = document.fileIds.length;
+      
+      console.log(`Found ${totalFiles} files to process`);
       
       // Process each file
-      for (const fileId of files.fileIds) {
+      for (const fileId of document.fileIds) {
         try {
-          // Get file info from database
-          const file = await storage.getDocumentById(documentId);
-          if (!file) continue;
-          
-          // Get file path
-          const filePath = storage.getFilePath(file.fileIds[0]);
+          console.log(`Processing file ID: ${fileId}`);
           
           // Extract text based on file type
           let text = "";
@@ -50,21 +55,31 @@ export const fileProcessor = {
             5 + Math.round((processedFileCount / totalFiles) * 20)
           );
           
+          // Get file path - ensure we await the Promise
+          const filePath = await storage.getFilePath(fileId);
+          console.log(`File path: ${filePath}`);
+            
+          // Now that we have awaited the Promise, we can use the string methods
           // Process file based on type
           if (filePath.endsWith(".pdf")) {
             // PDF file processing
+            console.log("Processing PDF file");
             text = await this.processPdfFile(filePath);
           } else if (filePath.endsWith(".docx") || filePath.endsWith(".doc")) {
             // Word document processing
+            console.log("Processing Word file");
             text = await this.processWordFile(filePath);
           } else if (filePath.endsWith(".txt")) {
             // Text file processing
+            console.log("Processing Text file");
             text = await this.processTextFile(filePath);
           } else if (filePath.endsWith(".md") || filePath.endsWith(".markdown")) {
             // Markdown file processing
+            console.log("Processing Markdown file");
             text = await this.processMarkdownFile(filePath);
           } else if (/\.(jpe?g|png)$/i.test(filePath)) {
             // Image file processing with OCR
+            console.log("Processing Image file with OCR");
             text = await ocrService.extractTextFromImage(filePath);
           }
           

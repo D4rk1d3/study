@@ -97,8 +97,16 @@ export const storage = {
   },
   
   // Get file path
-  getFilePath(filename: string): string {
-    return path.join(UPLOAD_DIR, filename);
+  async getFilePath(fileId: string): Promise<string> {
+    const file = await db.query.files.findFirst({
+      where: eq(schema.files.id, fileId)
+    });
+    
+    if (!file) {
+      throw new Error(`File not found with ID: ${fileId}`);
+    }
+    
+    return path.join(UPLOAD_DIR, file.filename);
   },
   
   // Get output path
