@@ -122,6 +122,11 @@ export default function ProcessingSettings({
               <h3 className="text-md font-medium text-gray-900">Rielaborazione AI</h3>
             </div>
             
+            <p className="text-xs text-gray-500 mb-3">
+              Utilizza l'intelligenza artificiale di OpenAI per migliorare la qualità del testo, 
+              renderlo più chiaro, coerente e leggibile.
+            </p>
+            
             <div className="flex items-center space-x-2 mb-3">
               <Checkbox 
                 id="useAI" 

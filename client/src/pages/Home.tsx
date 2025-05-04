@@ -190,21 +190,23 @@ export default function Home() {
 
   // Get status text based on processing stage
   const getStatusText = () => {
+    const useAI = processingOptions.useAI;
+    
     switch (processingStage) {
       case "preparing":
-        return "Preparing Files";
+        return "Preparazione File";
       case "ocr":
-        return "OCR Processing";
+        return "Elaborazione OCR";
       case "parsing":
-        return "Parsing Documents";
+        return "Analisi Documenti";
       case "analyzing":
-        return "Analyzing Content";
+        return useAI ? "Analisi Contenuto con AI" : "Analisi Contenuto";
       case "summarizing":
-        return "Generating Summary";
+        return useAI ? "Generazione Sintesi Avanzata" : "Generazione Sintesi";
       case "finalizing":
-        return "Finalizing Document";
+        return "Finalizzazione Documento";
       default:
-        return "Processing";
+        return "Elaborazione";
     }
   };
 
@@ -236,6 +238,7 @@ export default function Home() {
             status={getStatusText()}
             progress={processingProgress}
             isVisible={isProcessing}
+            processingOptions={processingOptions}
           />
           <OutputPreview
             previewData={previewData}

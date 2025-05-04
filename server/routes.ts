@@ -138,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }, [] as string[]);
         
         // Deduplicate keywords
-        const uniqueKeywords = [...new Set(keywords)];
+        const uniqueKeywords = Array.from(new Set(keywords));
         
         // Create glossary items (mock definitions for preview)
         glossary = uniqueKeywords.slice(0, 5).map(term => ({
