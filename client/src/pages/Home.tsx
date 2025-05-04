@@ -20,6 +20,8 @@ export default function Home() {
     generateGlossary: true,
     deduplicateContent: true,
     exportFormat: "pdf",
+    useAI: true,           // Abilitiamo la rielaborazione AI di default
+    rewriteLevel: 3,       // Livello medio di rielaborazione
   });
   const [processingStage, setProcessingStage] = useState<ProcessingStage>("idle");
   const [processingProgress, setProcessingProgress] = useState(0);

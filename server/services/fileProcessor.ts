@@ -143,10 +143,25 @@ export const fileProcessor = {
       );
       
       // Extract headings and keywords
-      const combinedMetadata = processedContents.reduce(
-        (acc, { metadata }) => {
-          if (metadata.headings) acc.headings.push(...metadata.headings);
-          if (metadata.keywords) acc.keywords.push(...metadata.keywords);
+      const combinedMetadata: {
+        headings: Array<{ text: string; level: number }>;
+        keywords: string[];
+        glossaryItems?: Array<{ term: string; definition: string }>;
+      } = processedContents.reduce(
+        (acc: { 
+          headings: Array<{ text: string; level: number }>; 
+          keywords: string[];
+        }, { metadata }) => {
+          if (metadata.headings && Array.isArray(metadata.headings)) {
+            // Dobbiamo fare un cast esplicito dei tipi per evitare errori TS
+            const typedHeadings = metadata.headings as Array<{ text: string; level: number }>;
+            acc.headings = [...acc.headings, ...typedHeadings];
+          }
+          if (metadata.keywords && Array.isArray(metadata.keywords)) {
+            // Dobbiamo fare un cast esplicito dei tipi per evitare errori TS
+            const typedKeywords = metadata.keywords as string[];
+            acc.keywords = [...acc.keywords, ...typedKeywords];
+          }
           return acc;
         },
         { headings: [], keywords: [] }

@@ -99,7 +99,7 @@ export default function ProcessingSettings({
             </Label>
             <Select 
               value={options.exportFormat} 
-              onValueChange={(value) => onChange({ exportFormat: value })}
+              onValueChange={(value) => onChange({ exportFormat: value as 'pdf' | 'docx' | 'html' })}
               disabled={disabled}
             >
               <SelectTrigger id="exportFormat" className="w-full">

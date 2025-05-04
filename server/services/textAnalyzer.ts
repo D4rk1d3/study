@@ -124,7 +124,7 @@ export const textAnalyzer = {
     
     // Simple deduplication by comparing paragraph similarity
     const uniqueParagraphs: string[] = [];
-    const seen = new Set<string>();
+    const seenParagraphs: string[] = [];
     
     for (const paragraph of paragraphs) {
       const normalized = paragraph.trim().toLowerCase();
@@ -133,11 +133,11 @@ export const textAnalyzer = {
       if (!normalized) continue;
       
       // Check if we've seen this paragraph before
-      if (seen.has(normalized)) continue;
+      if (seenParagraphs.includes(normalized)) continue;
       
       // Check for similar paragraphs (simple implementation)
       let isDuplicate = false;
-      for (const seenParagraph of seen) {
+      for (const seenParagraph of seenParagraphs) {
         if (this.calculateSimilarity(normalized, seenParagraph) > 0.8) {
           isDuplicate = true;
           break;
@@ -145,7 +145,7 @@ export const textAnalyzer = {
       }
       
       if (!isDuplicate) {
-        seen.add(normalized);
+        seenParagraphs.push(normalized);
         uniqueParagraphs.push(paragraph);
       }
     }
@@ -155,18 +155,22 @@ export const textAnalyzer = {
   
   // Calculate similarity between two strings (Jaccard similarity)
   calculateSimilarity(str1: string, str2: string): number {
-    // Convert strings to sets of words
-    const set1 = new Set(str1.split(/\s+/));
-    const set2 = new Set(str2.split(/\s+/));
+    // Convert strings to arrays of words
+    const words1 = str1.split(/\s+/);
+    const words2 = str2.split(/\s+/);
+    
+    // Create sets for comparison (as arrays)
+    const uniqueWords1 = Array.from(new Set(words1));
+    const uniqueWords2 = Array.from(new Set(words2));
     
     // Calculate intersection
-    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const intersection = uniqueWords1.filter(word => uniqueWords2.includes(word));
     
-    // Calculate union
-    const union = new Set([...set1, ...set2]);
+    // Calculate union (combine arrays and remove duplicates)
+    const union = Array.from(new Set([...uniqueWords1, ...uniqueWords2]));
     
     // Return Jaccard similarity
-    return intersection.size / union.size;
+    return intersection.length / union.length;
   },
   
   // Summarize text
