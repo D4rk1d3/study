@@ -14,6 +14,8 @@ export interface ProcessingOptions {
   generateGlossary: boolean;
   deduplicateContent: boolean;
   exportFormat: 'pdf' | 'docx' | 'html';
+  useAI?: boolean; // Usa OpenAI per rielaborare il testo
+  rewriteLevel?: number; // Livello di rielaborazione del testo (1-5)
 }
 
 // Preview data for the document

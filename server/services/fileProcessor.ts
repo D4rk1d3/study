@@ -152,6 +152,35 @@ export const fileProcessor = {
         { headings: [], keywords: [] }
       );
       
+      // Rielabora il testo utilizzando OpenAI se richiesto
+      let processedText = summarizedText;
+      if (settings.useAI && process.env.OPENAI_API_KEY) {
+        console.log("Rielaborando il testo con OpenAI...");
+        try {
+          processedText = await textAnalyzer.rewriteText(
+            summarizedText,
+            settings.rewriteLevel || 3
+          );
+        } catch (error) {
+          console.error("Errore nella rielaborazione del testo:", error);
+        }
+      } else {
+        console.log("Rielaborazione AI non richiesta o API key non disponibile");
+      }
+      
+      // Genera un glossario avanzato se richiesto
+      if (settings.generateGlossary && process.env.OPENAI_API_KEY) {
+        console.log("Generando un glossario avanzato con OpenAI");
+        try {
+          combinedMetadata.glossaryItems = await textAnalyzer.generateGlossary(
+            processedText, 
+            combinedMetadata.keywords
+          );
+        } catch (error) {
+          console.error("Errore nella generazione del glossario:", error);
+        }
+      }
+      
       // Update status to finalizing
       await storage.updateDocumentStatus(documentId, "finalizing", 85);
       
@@ -160,7 +189,7 @@ export const fileProcessor = {
         documentId,
         settings.exportFormat,
         {
-          text: summarizedText,
+          text: processedText, // Use the rewritten text if available
           metadata: combinedMetadata,
           generateIndex: settings.generateIndex,
           generateGlossary: settings.generateGlossary

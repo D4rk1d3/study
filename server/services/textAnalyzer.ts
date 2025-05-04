@@ -1,13 +1,26 @@
 // Text analysis service for processing and analyzing text
+import { openaiService } from "./openaiService";
+
 export const textAnalyzer = {
   // Analyze text to extract structure and metadata
-  async analyzeText(text: string): Promise<any> {
+  async analyzeText(text: string, useAI: boolean = true): Promise<any> {
     try {
-      // Extract headings
-      const headings = this.extractHeadings(text);
+      let headings = [];
+      let keywords = [];
       
-      // Extract keywords
-      const keywords = this.extractKeywords(text);
+      if (useAI && process.env.OPENAI_API_KEY) {
+        console.log("Utilizzando OpenAI per l'analisi del testo");
+        // Extract headings using OpenAI
+        headings = await openaiService.generateStructuredIndex(text);
+        
+        // Extract keywords using traditional method for now
+        keywords = this.extractKeywords(text);
+      } else {
+        console.log("Utilizzando analisi del testo tradizionale");
+        // Fallback to traditional method
+        headings = this.extractHeadings(text);
+        keywords = this.extractKeywords(text);
+      }
       
       return {
         headings,
@@ -15,11 +28,15 @@ export const textAnalyzer = {
       };
     } catch (error) {
       console.error('Text analysis error:', error);
-      return { headings: [], keywords: [] };
+      // Fallback to traditional method in case of error
+      return { 
+        headings: this.extractHeadings(text), 
+        keywords: this.extractKeywords(text) 
+      };
     }
   },
   
-  // Extract headings from text using regex patterns
+  // Extract headings from text using regex patterns (traditional method)
   extractHeadings(text: string): Array<{ text: string, level: number }> {
     const headings = [];
     
@@ -154,8 +171,18 @@ export const textAnalyzer = {
   
   // Summarize text
   async summarizeText(text: string, level: number): Promise<string> {
-    // In a real implementation, you would use a transformer-based model for summarization
-    // For this demo, we'll implement a simple extractive summarization
+    // Use OpenAI if available
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        console.log("Utilizzando OpenAI per la sintesi del testo");
+        return await openaiService.summarizeText(text, level);
+      } catch (error) {
+        console.error("Errore con OpenAI, fallback al metodo tradizionale:", error);
+      }
+    }
+    
+    console.log("Utilizzando sintesi del testo tradizionale");
+    // Fallback to traditional method if OpenAI is not available or fails
     
     // Split text into sentences
     const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
@@ -211,5 +238,46 @@ export const textAnalyzer = {
     // Construct summary
     const summarySentences = topIndices.map(index => sentences[index]);
     return summarySentences.join(' ');
+  },
+  
+  /**
+   * Rielabora il testo utilizzando OpenAI
+   * @param text Testo da rielaborare
+   * @param level Livello di rielaborazione (1-5)
+   * @returns Testo rielaborato
+   */
+  async rewriteText(text: string, level: number): Promise<string> {
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        return await openaiService.rewriteText(text, level);
+      } catch (error) {
+        console.error("Errore nella rielaborazione con OpenAI:", error);
+      }
+    }
+    
+    // Se OpenAI non è disponibile o fallisce, restituisci il testo originale
+    return text;
+  },
+  
+  /**
+   * Genera un glossario utilizzando OpenAI
+   * @param text Testo del documento
+   * @param keywords Parole chiave estratte
+   * @returns Array di termini e definizioni
+   */
+  async generateGlossary(text: string, keywords: string[]): Promise<Array<{ term: string, definition: string }>> {
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        return await openaiService.generateGlossary(text, keywords);
+      } catch (error) {
+        console.error("Errore nella generazione del glossario con OpenAI:", error);
+      }
+    }
+    
+    // Fallback a un glossario semplice basato sulle parole chiave
+    return keywords.slice(0, 10).map(term => ({
+      term,
+      definition: `Definizione per ${term} ottenuta automaticamente.`
+    }));
   }
 };
