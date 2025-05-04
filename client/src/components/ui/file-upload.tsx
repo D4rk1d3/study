@@ -19,7 +19,7 @@ export function FileUpload({
   dropMessage = "Drag & drop files here",
   browseMessage = "or click to browse",
   supportedFormatsMessage = "Supported formats:",
-  supportedFormats = ["PDF", "DOCX", "TXT", "JPG/PNG"],
+  supportedFormats = ["PDF", "DOCX", "TXT", "MD", "JPG/PNG"],
   icon,
   maxSize,
   accept,

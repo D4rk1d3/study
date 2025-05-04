@@ -60,6 +60,9 @@ export const fileProcessor = {
           } else if (filePath.endsWith(".txt")) {
             // Text file processing
             text = await this.processTextFile(filePath);
+          } else if (filePath.endsWith(".md") || filePath.endsWith(".markdown")) {
+            // Markdown file processing
+            text = await this.processMarkdownFile(filePath);
           } else if (/\.(jpe?g|png)$/i.test(filePath)) {
             // Image file processing with OCR
             text = await ocrService.extractTextFromImage(filePath);
@@ -178,6 +181,39 @@ export const fileProcessor = {
       return text;
     } catch (error) {
       console.error("Error processing text file:", error);
+      return "";
+    }
+  },
+  
+  async processMarkdownFile(filePath: string): Promise<string> {
+    try {
+      // Read the markdown file
+      const markdownText = await fs.readFile(filePath, 'utf-8');
+      
+      // Basic markdown to plain text conversion
+      // Remove headers (# Header)
+      let plainText = markdownText.replace(/#{1,6}\s+([^\n]+)/g, '$1\n');
+      
+      // Remove bold and italic markers
+      plainText = plainText.replace(/(\*\*|__)(.*?)\1/g, '$2');
+      plainText = plainText.replace(/(\*|_)(.*?)\1/g, '$2');
+      
+      // Convert links [text](url) to just text
+      plainText = plainText.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+      
+      // Convert lists to plain text
+      plainText = plainText.replace(/^\s*[-*+]\s+/gm, '• ');
+      plainText = plainText.replace(/^\s*\d+\.\s+/gm, '• ');
+      
+      // Remove code blocks
+      plainText = plainText.replace(/```[\s\S]*?```/g, '');
+      
+      // Remove horizontal rules
+      plainText = plainText.replace(/^\s*[-*_]{3,}\s*$/gm, '');
+      
+      return plainText;
+    } catch (error) {
+      console.error("Error processing markdown file:", error);
       return "";
     }
   }

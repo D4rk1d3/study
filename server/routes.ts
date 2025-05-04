@@ -14,7 +14,7 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit
   fileFilter: (_req, file, cb) => {
     // Check file types
-    const filetypes = /pdf|docx?|txt|jpe?g|png/;
+    const filetypes = /pdf|docx?|txt|jpe?g|png|md|markdown/;
     const mimetype = filetypes.test(file.mimetype);
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     
@@ -22,7 +22,7 @@ const upload = multer({
       return cb(null, true);
     }
     
-    cb(new Error("File upload only supports PDF, DOCX, TXT, JPG, and PNG formats"));
+    cb(new Error("File upload only supports PDF, DOCX, TXT, MD, JPG, and PNG formats"));
   }
 });
 
