@@ -81,7 +81,11 @@ export const fileProcessor = {
             // Image file processing with OCR
             console.log("Processing Image file with OCR");
             text = await ocrService.extractTextFromImage(filePath);
+          } else {
+            console.log(`Unsupported file format: ${filePath}`);
           }
+          
+          console.log(`Extracted text (sample): ${text.substring(0, 100)}...`);
           
           // Update document status to parsing
           await storage.updateDocumentStatus(
@@ -92,10 +96,15 @@ export const fileProcessor = {
           
           // Analyze and extract structure
           if (text) {
+            console.log('Analyzing text structure...');
             metadata = await textAnalyzer.analyzeText(text);
+            console.log(`Extracted metadata: ${JSON.stringify(metadata)}`);
+          } else {
+            console.log('No text extracted, skipping analysis');
           }
           
           // Store processed content
+          console.log(`Storing processed content for file ${fileId}`);
           await storage.storeProcessedContent(fileId, text, metadata);
           
           // Increment processed count
