@@ -50,16 +50,36 @@ export const storage = {
     
     // Se è stato fornito un messaggio di errore, aggiungilo ai metadati
     if (errorMessage) {
-      // Ottieni il documento corrente per aggiornare i metadati
-      const document = await this.getDocumentById(documentId);
-      if (document) {
-        // Aggiungi l'errore ai metadati
-        const settingsObj = document.settings ? JSON.parse(document.settings || '{}') : {};
-        settingsObj.lastErrorMessage = errorMessage;
-        settingsObj.lastErrorTime = new Date().toISOString();
+      try {
+        // Ottieni il documento corrente direttamente dal DB per i metadati
+        const document = await db.query.documents.findFirst({
+          where: eq(schema.documents.id, documentId)
+        });
         
-        // Aggiorna i metadati
-        updateData.settings = JSON.stringify(settingsObj);
+        if (document) {
+          // Aggiungi l'errore ai metadati
+          let settingsObj = {};
+          try {
+            if (document.settings) {
+              settingsObj = JSON.parse(document.settings);
+            }
+          } catch (e) {
+            console.error("Errore nel parsing delle impostazioni:", e);
+            settingsObj = {};
+          }
+          
+          // Aggiorna con il messaggio di errore
+          settingsObj = {
+            ...settingsObj,
+            lastErrorMessage: errorMessage,
+            lastErrorTime: new Date().toISOString()
+          };
+          
+          // Aggiorna i metadati
+          updateData.settings = JSON.stringify(settingsObj);
+        }
+      } catch (e) {
+        console.error("Errore nella gestione dei metadati:", e);
       }
     }
     
@@ -86,7 +106,8 @@ export const storage = {
     
     if (!document) return null;
     
-    return {
+    // Cast to return type
+    const documentResult: Document = {
       id: document.id,
       title: document.title,
       progress: document.progress,
@@ -97,6 +118,18 @@ export const storage = {
       outputPath: document.outputPath || undefined,
       exportFormat: document.exportFormat
     };
+    
+    // Add optional properties
+    if (document.settings) {
+      documentResult.settings = document.settings;
+    }
+    
+    // Add metadata if available (not in the type yet)
+    if ((document as any).metadata) {
+      documentResult.metadata = (document as any).metadata;
+    }
+    
+    return documentResult;
   },
   
   // Save file information

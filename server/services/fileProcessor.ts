@@ -191,13 +191,11 @@ export const fileProcessor = {
           } catch (error) {
             console.error("Errore nella rielaborazione del testo:", error);
             // Aggiorna il documento con informazioni sull'errore
-            await storage.updateDocumentStatus(documentId, "analyzing", 70, 
-              "Impossibile utilizzare OpenAI per la rielaborazione del testo. Utilizzando metodi tradizionali.");
+            await storage.updateDocumentStatus(documentId, "analyzing", 70);
           }
         } else {
           console.log("OpenAI API key non configurata. Utilizzo metodi tradizionali.");
-          await storage.updateDocumentStatus(documentId, "analyzing", 70, 
-            "OpenAI API key non configurata. Utilizzando metodi tradizionali.");
+          await storage.updateDocumentStatus(documentId, "analyzing", 70);
         }
       } else {
         console.log("Rielaborazione AI non richiesta");

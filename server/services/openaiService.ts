@@ -167,6 +167,11 @@ export const openaiService = {
     try {
       console.log(`Sintetizzando testo con OpenAI (livello ${level})...`);
       
+      // Controllo preventivo della chiave API
+      if (!process.env.OPENAI_API_KEY) {
+        throw new Error("OpenAI API key non configurata");
+      }
+      
       // Il livello determina quanto dettagliata dovrebbe essere la sintesi
       const promptByLevel = {
         1: "Crea una sintesi molto dettagliata, mantenendo la maggior parte dei concetti importanti (circa 80% della lunghezza originale):",
@@ -194,13 +199,23 @@ export const openaiService = {
         max_tokens: 1000,
       });
       
-      const summary = response.choices[0].message.content || "Non è stato possibile generare una sintesi.";
+      if (!response.choices || !response.choices.length || !response.choices[0].message.content) {
+        throw new Error("Risposta API OpenAI non valida");
+      }
+      
+      const summary = response.choices[0].message.content;
       console.log("Sintesi completata");
       return summary;
-    } catch (error) {
-      console.error("Errore nella sintesi del testo con OpenAI:", error);
-      // In caso di errore, restituisci un messaggio di fallback
-      return "Non è stato possibile generare una sintesi a causa di un errore.";
+    } catch (error: any) {
+      // Controlla se l'errore è dovuto a quota insufficiente
+      if (error.code === 'insufficient_quota') {
+        console.error("ERRORE DI QUOTA OPENAI: Credito insufficiente per utilizzare l'API OpenAI.");
+        throw new Error("Quota OpenAI insufficiente");
+      } else {
+        console.error("Errore nella sintesi del testo con OpenAI:", error);
+        // In caso di altro errore, espandi l'informazione di errore
+        throw new Error(`Errore AI: ${error.message || 'Errore sconosciuto'}`);
+      }
     }
   }
 };

@@ -27,6 +27,7 @@ export const documents = pgTable("documents", {
   exportFormat: text("export_format").notNull().default("pdf"),
   outputPath: text("output_path"),
   settings: text("settings"), // JSON string of processing settings
+  metadata: text("metadata"), // JSON string for additional metadata (error messages, etc.)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

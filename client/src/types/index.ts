@@ -69,6 +69,8 @@ export interface Document {
   fileIds: string[];
   outputPath?: string;
   exportFormat: string;
+  settings?: string; // Impostazioni serializzate in JSON
+  metadata?: string; // Metadati serializzati in JSON
 }
 
 // Processed text content
